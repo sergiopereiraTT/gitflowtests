@@ -1,3 +1,20 @@
+# dev environment local settings (personal options)  ==========
+*.sublime-workspace
+.idea/*
+
+# local development enviroment files ======================================
+.vagrant
+venv*/
+node_modules
+
+# Operating system litter =================================
+[Tt]humbs.db
+.DS_Store
+
+# any other development local files ============================
+## For convenience, any file or folder that starts with "local" will be ignored
+local*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
