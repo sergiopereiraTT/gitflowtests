@@ -16,6 +16,7 @@ def validate_version(version):
 
 def main():
     validate_version(args.next_dev_version)
+    # this line pretends to be a hotfix in the uat branch
 
 
 if __name__ == '__main__':
