@@ -26,6 +26,10 @@ def run_git(command):
         exit_with_error('Aborting')
 
 
+def pull():
+    run_git('pull --rebase')
+    
+    
 def validate_version_new_name(version):
     try:
         parts = tuple(int(p) for p in version.split('.'))
@@ -41,22 +45,30 @@ def in_conflict():
 
 
 def ensure_working_tree_is_clean():
+    resp = run_git('rev-list @{u}..')
+    if len(resp) > 0:
+        exit_with_error('Your {} branch is ahead of the origin remote by {} commits. '
+                        'Either push or revert these changes before trying again.', repo.active_branch.name, len(resp))
+
+
+def ensure_all_branches_are_in_sync():
+    for branch in ['develop', 'master', find_current_release_branch(), find_current_uat_branch()]:
+        print '    checking out', branch
+        repo.branches[branch].checkout()
+        assert branch == repo.active_branch.name
+        pull()
+        ensure_current_branch_not_ahead()
+
+
+def ensure_current_branch_not_ahead():
     resp = run_git('status -s')
     if len(resp) > 0:
         exit_with_error('Your working directory contains changes. Stash, commit or undo them before retrying.')
 
 
 def merge_branch(src_branch, dst_branch):
-    print '    checking out', src_branch
-    repo.branches[src_branch].checkout()
-    assert src_branch == repo.active_branch.name
-    run_git('pull')
-
     print '    checking out', dst_branch
     repo.branches[dst_branch].checkout()
-    assert dst_branch == repo.active_branch.name
-    run_git('pull')
-
     print '    merging', src_branch, 'into', dst_branch
     run_git(['merge', '--no-ff', src_branch])
     run_git('push')
