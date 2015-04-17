@@ -45,10 +45,9 @@ def in_conflict():
 
 
 def ensure_working_tree_is_clean():
-    resp = run_git('rev-list @{u}..')
+    resp = run_git('status -s')
     if len(resp) > 0:
-        exit_with_error('Your {} branch is ahead of the origin remote by {} commits. '
-                        'Either push or revert these changes before trying again.', repo.active_branch.name, len(resp))
+        exit_with_error('Your working directory contains changes. Stash, commit or undo them before retrying.')
 
 
 def ensure_all_branches_are_in_sync():
@@ -61,9 +60,10 @@ def ensure_all_branches_are_in_sync():
 
 
 def ensure_current_branch_not_ahead():
-    resp = run_git('status -s')
+    resp = run_git('rev-list @{u}..')
     if len(resp) > 0:
-        exit_with_error('Your working directory contains changes. Stash, commit or undo them before retrying.')
+        exit_with_error('Your {} branch is ahead of the origin remote by {} commits. '
+                        'Either push or revert these changes before trying again.', repo.active_branch.name, len(resp))
 
 
 def merge_branch(src_branch, dst_branch):
@@ -179,6 +179,7 @@ def tag_master_version():
 def main():
     validate_version_new_name(args.next_dev_version)
     ensure_working_tree_is_clean()
+    ensure_all_branches_are_in_sync()
     finish_current_uat_branch()
     tag_master_version()
     create_new_uat_branch()
